@@ -1,6 +1,28 @@
-# SQL Superstore Analysis
+# Retail Superstore — SQL Analytics Project
 
-A end-to-end SQL data analysis project using the classic Superstore retail dataset. This project covers the full data analysis pipeline — from data cleaning and validation to revenue analysis, customer segmentation, and cohort retention.
+![MySQL](https://img.shields.io/badge/Database-MySQL-4479A1?style=flat&logo=mysql&logoColor=white)
+![SQL](https://img.shields.io/badge/Language-SQL-orange?style=flat)
+![Domain](https://img.shields.io/badge/Domain-E--Commerce%20%7C%20Retail-green?style=flat)
+![Type](https://img.shields.io/badge/Type-Data%20Analysis-blueviolet?style=flat)
+
+A structured, end-to-end SQL analytics project on a US retail superstore's transactional data. Built to answer real business questions across revenue performance, customer behavior, and long-term retention — using advanced MySQL techniques throughout.
+
+---
+
+## Business Questions Answered
+
+> The core of every analysis here is a business problem, not just a query.
+
+| Business Question | Analysis |
+|---|---|
+| How much revenue and profit is the business generating? | Total revenue, profit & margin |
+| Which product categories and sub-categories are most profitable? | Category & sub-category breakdown |
+| Which states and customer segments drive the most value? | Geographic & segment analysis |
+| Is revenue growing month over month? | MoM growth with % change |
+| Who are the highest-value customers? | Top 10 customer revenue ranking |
+| How loyal are customers? Are they coming back? | Repeat purchase rate & cohort retention |
+| How recently did customers buy, how often, and how much? | RFM Segmentation |
+| What does the revenue trajectory look like over time? | Cumulative revenue trend |
 
 ---
 
@@ -9,135 +31,188 @@ A end-to-end SQL data analysis project using the classic Superstore retail datas
 ```
 SQL-Superstore-Analysis/
 │
-├── Superstore_Dataset.csv       # Raw dataset
-├── 01_data_cleaning.sql         # Data validation & cleaning
-├── 02_revenue_analysis.sql      # Revenue & profit analysis (18 queries)
-├── 03_customer_metrics.sql      # Customer behavior & RFM segmentation
-└── 04_cohort_retention.sql      # Cohort analysis & retention rates
+├── Superstore_Dataset.csv       # Raw transactional dataset (~9,000 rows)
+├── 01_data_cleaning.sql         # Data validation, deduplication & type fixing
+├── 02_revenue_analysis.sql      # 18 revenue & profit queries
+├── 03_customer_metrics.sql      # RFM segmentation & customer KPIs
+└── 04_cohort_retention.sql      # Cohort-based retention analysis
 ```
 
 ---
 
-## Dataset
+## Dataset Overview
 
-The **Superstore Dataset** is a popular retail dataset containing transactional order data from a US-based superstore. It includes:
+**Source:** Sample retail dataset — US Superstore orders (4 years of data)
+**Size:** ~9,000 rows &nbsp;|&nbsp; **Database:** MySQL &nbsp;|&nbsp; **Table:** `PROJECT.SUPERSTORE`
 
 | Column | Description |
 |---|---|
-| `ORDER_ID` | Unique order identifier |
-| `ORDER_DATE` / `SHIP_DATE` | Order and shipment dates |
+| `ORDER_ID` / `ORDER_DATE` | Order identifier and date placed |
+| `SHIP_DATE` | Date the order was shipped |
 | `CUSTOMER_ID` / `CUSTOMER_NAME` | Customer identifiers |
-| `SEGMENT` | Customer segment (Consumer, Corporate, Home Office) |
-| `STATE` | US state of the order |
-| `PRODUCT_ID` / `PRODUCT_NAME` | Product identifiers |
-| `CATEGORY` / `SUB-CATEGORY` | Product classification |
-| `SALES` | Revenue from the order line |
-| `PROFIT` | Profit from the order line |
+| `SEGMENT` | Consumer · Corporate · Home Office |
+| `STATE` | US delivery state |
+| `CATEGORY` / `SUB-CATEGORY` | Product classification (3 categories, 17 sub-categories) |
+| `SALES` | Revenue per order line |
+| `PROFIT` | Profit per order line |
 | `QUANTITY` | Units sold |
 | `DISCOUNT` | Discount applied |
-
-**Database:** MySQL &nbsp;|&nbsp; **Table:** `PROJECT.SUPERSTORE`
 
 ---
 
 ## Analysis Breakdown
 
-### 01 — Data Cleaning ([01_data_cleaning.sql](01_data_cleaning.sql))
+### 01 — Data Cleaning & Validation &nbsp;·&nbsp; [01_data_cleaning.sql](01_data_cleaning.sql)
 
-Before any analysis, the raw data is validated and cleaned:
+Every analysis starts with trust in the data. This script validates and prepares the raw dataset before any business queries run.
 
-- **Row count** — verify total records loaded
-- **NULL check** — detect missing values in key business columns (`SALES`, `PROFIT`, `ORDER_DATE`, `CUSTOMER_ID`)
-- **Duplicate removal** — identify and delete duplicate rows using `ROW_NUMBER()` window function partitioned by order + product keys
-- **Date formatting** — convert string dates to proper `DATE` type using `STR_TO_DATE()` and `ALTER TABLE`
-- **Data integrity** — check for negative sales or zero/negative quantities
-- **Summary statistics** — min, max, average, and total for both sales and profit, including overall profit margin
+| Check | What It Does |
+|---|---|
+| Row count | Confirms total records loaded correctly |
+| NULL audit | Scans key columns — `SALES`, `PROFIT`, `ORDER_DATE`, `CUSTOMER_ID` |
+| Duplicate removal | Detects and deletes exact duplicates using `ROW_NUMBER()` partitioned by order + product keys |
+| Date conversion | Converts string dates → proper `DATE` type via `STR_TO_DATE()` + `ALTER TABLE` |
+| Data integrity | Flags negative sales and zero/negative quantities |
+| Summary stats | Min, max, average, total for revenue & profit — including overall profit margin |
 
 ---
 
-### 02 — Revenue Analysis ([02_revenue_analysis.sql](02_revenue_analysis.sql))
+### 02 — Revenue & Profit Analysis &nbsp;·&nbsp; [02_revenue_analysis.sql](02_revenue_analysis.sql)
 
-18 queries covering business performance from multiple angles:
+18 queries covering every angle of business performance — from high-level KPIs down to product-level and geographic breakdowns.
 
-| # | Analysis |
+| # | Business Insight |
 |---|---|
 | 01 | Total revenue & total profit |
-| 02 | Overall profit percentage |
+| 02 | Overall profit margin % |
 | 03 | Average revenue & profit by year |
 | 04 | Average Order Value (AOV) |
-| 05 | Average order profit |
+| 05 | Average profit per order |
 | 06 | Revenue & profit by **category** |
 | 07 | Revenue & profit by **sub-category** |
-| 08 | Yearly revenue and profit trend |
-| 09 | Orders, revenue & profit by **state** |
-| 10 | Orders, revenue & profit by **segment** |
-| 11 | Most sold products and their revenue |
-| 12 | **Month-on-Month (MoM) growth** with % change |
-| 13 | Category-wise revenue with profit margin % |
-| 14 | Top 10 customers by revenue |
-| 15 | Monthly revenue trend |
-| 16 | **Cumulative revenue** over time |
-| 17 | Top product within each category (using `ROW_NUMBER`) |
-| 18 | Average Order Value (AOV) by month |
+| 08 | Year-over-year revenue & profit trend |
+| 09 | Orders, revenue & profit by **US state** |
+| 10 | Orders, revenue & profit by **customer segment** |
+| 11 | Best-selling products by order frequency & revenue |
+| 12 | **Month-on-Month (MoM) revenue growth** with % change using `LAG()` |
+| 13 | Category revenue with profit margin % |
+| 14 | Top 10 highest-value customers |
+| 15 | Monthly revenue trend (time series) |
+| 16 | **Cumulative revenue** over time using running `SUM() OVER()` |
+| 17 | Top-selling product within each category using `ROW_NUMBER()` |
+| 18 | Monthly Average Order Value (AOV) trend |
 
 ---
 
-### 03 — Customer Metrics ([03_customer_metrics.sql](03_customer_metrics.sql))
+### 03 — Customer Metrics & Segmentation &nbsp;·&nbsp; [03_customer_metrics.sql](03_customer_metrics.sql)
 
-Deep dive into customer behavior and value:
+Goes beyond revenue to understand *who* the customers are and *how* they behave.
 
-- **Customer revenue ranking** — rank all customers by total revenue using `RANK()` window function
-- **RFM Segmentation** — compute Recency, Frequency, and Monetary value per customer:
-  - **Recency** — days since last purchase (`DATEDIFF`)
-  - **Frequency** — count of distinct orders
-  - **Monetary** — total spend
-- **Repeat Purchase Rate** — percentage of customers who placed more than one order
-- **Monthly Customer KPIs** — active customers, total orders, revenue, AOV, and orders per customer tracked month by month
+**RFM Segmentation** — a proven framework for customer value scoring:
 
----
+| Dimension | Metric | SQL Used |
+|---|---|---|
+| **Recency** | Days since last purchase | `DATEDIFF(CURDATE(), MAX(ORDER_DATE))` |
+| **Frequency** | Number of distinct orders | `COUNT(DISTINCT ORDER_ID)` |
+| **Monetary** | Total spend | `SUM(SALES)` |
 
-### 04 — Cohort Retention ([04_cohort_retention.sql](04_cohort_retention.sql))
-
-Understand how well the business retains customers over time:
-
-- **First Purchase Month** — assign each customer to their acquisition cohort using `MIN(ORDER_DATE)`
-- **Cohort Retention Analysis** — for each cohort, track how many customers returned to purchase in subsequent months and calculate the **retention rate** as a percentage of cohort size
+**Also includes:**
+- Customer revenue ranking with `RANK()` window function
+- Repeat purchase rate — what % of customers bought more than once
+- Monthly customer KPIs — active users, total orders, revenue, AOV, and orders per customer
 
 ---
 
-## Key SQL Techniques Used
+### 04 — Cohort Retention Analysis &nbsp;·&nbsp; [04_cohort_retention.sql](04_cohort_retention.sql)
 
-- **Window Functions** — `ROW_NUMBER()`, `RANK()`, `LAG()`, `SUM() OVER()`
-- **CTEs** — multi-step logic broken into readable `WITH` clauses
-- **Aggregate Functions** — `SUM()`, `AVG()`, `COUNT()`, `MIN()`, `MAX()`
-- **Date Functions** — `DATE_FORMAT()`, `STR_TO_DATE()`, `DATEDIFF()`, `YEAR()`
-- **Subqueries** — for repeat purchase rate and deduplication
-- **JOINs** — self-joins for cohort analysis
-- **NULLIF** — safe division to avoid division-by-zero in MoM growth
-- **DDL** — `ALTER TABLE`, `UPDATE` for schema and data corrections
+Tracks whether customers return after their first purchase — one of the most important signals of business health.
+
+- **Cohort assignment** — each customer is grouped by their first purchase month using `MIN(ORDER_DATE)`
+- **Retention tracking** — for each cohort, counts how many customers placed orders in each subsequent month
+- **Retention rate** — calculated as a percentage of cohort size, enabling direct comparison across cohorts
+
+```sql
+-- Core logic: cohort retention rate
+ROUND(COUNT(DISTINCT ss.customer_id) / cs.total_customers, 2) AS retention_pct
+```
+
+---
+
+## SQL Techniques Demonstrated
+
+| Technique | Used For |
+|---|---|
+| `ROW_NUMBER()` | Deduplication, top-N per group |
+| `RANK()` | Customer revenue ranking |
+| `LAG()` | Month-on-Month growth calculation |
+| `SUM() OVER()` | Cumulative revenue over time |
+| CTEs (`WITH`) | Multi-step cohort logic, MoM growth |
+| Subqueries | Repeat purchase rate calculation |
+| Self-JOINs | Linking cohorts back to transaction data |
+| `DATE_FORMAT()` / `STR_TO_DATE()` | Date parsing and time-series grouping |
+| `DATEDIFF()` | Recency calculation in RFM |
+| `NULLIF()` | Safe division to prevent divide-by-zero |
+| `ALTER TABLE` / `UPDATE` | Schema corrections on raw data |
 
 ---
 
 ## How to Run
 
-1. **Import the dataset** — Load `Superstore_Dataset.csv` into a MySQL table named `SUPERSTORE` inside a schema called `PROJECT`
+1. **Import the data** — Load `Superstore_Dataset.csv` into MySQL as table `SUPERSTORE` in schema `PROJECT`
 2. **Run scripts in order:**
-   ```
-   01_data_cleaning.sql      ← Run first (cleans and prepares data)
-   02_revenue_analysis.sql   ← Revenue & profit insights
-   03_customer_metrics.sql   ← Customer segmentation & KPIs
-   04_cohort_retention.sql   ← Retention analysis
-   ```
-3. Any MySQL client works — **MySQL Workbench**, **DBeaver**, or the `mysql` CLI
+
+```
+01_data_cleaning.sql      ← Always run first
+02_revenue_analysis.sql   ← Revenue & profit insights
+03_customer_metrics.sql   ← Customer segmentation & KPIs
+04_cohort_retention.sql   ← Retention analysis
+```
+
+3. Compatible with **MySQL Workbench**, **DBeaver**, or the `mysql` CLI
 
 ---
 
 ## Skills Demonstrated
 
-- Data Cleaning & Validation
-- Exploratory Data Analysis (EDA) with SQL
-- Business KPI calculation (Revenue, Profit Margin, AOV)
-- Customer Segmentation (RFM Analysis)
-- Time-series trend analysis
-- Cohort & Retention analysis
-- Advanced SQL (Window Functions, CTEs, Subqueries)
+- **Data Cleaning & Validation** — Null checks, deduplication, type conversion, integrity checks
+- **Exploratory Data Analysis (EDA)** — Summary statistics, distributions, range validation
+- **Business KPI Analysis** — Revenue, Profit Margin, AOV, MoM Growth
+- **Customer Analytics** — RFM Segmentation, Repeat Purchase Rate, Customer Ranking
+- **Time-Series Analysis** — Monthly trends, YoY comparison, cumulative growth
+- **Cohort & Retention Analysis** — Customer lifecycle tracking, retention rate calculation
+- **Advanced SQL** — Window functions, CTEs, subqueries, multi-table joins
+
+---
+
+## Challenges Faced
+
+**1. Dates stored as strings**
+The raw dataset had `ORDER_DATE` and `SHIP_DATE` loaded as text (`VARCHAR`), not actual date types. Running any date-based grouping or comparison on them returned wrong results. Solved by using `STR_TO_DATE()` to parse the format and `ALTER TABLE` to permanently change the column types — learning that data type correctness is a prerequisite, not an afterthought.
+
+**2. Detecting duplicates without a simple key**
+The dataset had no single "duplicate" column to check. Duplicates were only identifiable by matching across multiple columns together (`ORDER_ID`, `CUSTOMER_ID`, `PRODUCT_ID`, `ORDER_DATE`, `SALES`, `PROFIT`, `QUANTITY`). Used `ROW_NUMBER() OVER (PARTITION BY ...)` to tag duplicates and then deleted them by `ROW_ID` — understanding that deduplication logic depends entirely on what makes a row unique in context.
+
+**3. Divide-by-zero in Month-on-Month growth**
+When calculating MoM growth %, the first month has no previous month — making `LAG()` return `NULL`, and dividing by that caused errors. Solved using `NULLIF(LAG(...), 0)` to safely handle both zero and null denominators, returning `NULL` instead of crashing the query.
+
+**4. Building cohort retention from scratch**
+Cohort analysis required three separate logical steps: finding each customer's first purchase month, calculating cohort sizes, and then joining both back to all transactions to compute retention per month. Chaining multiple CTEs together was the only clean way to do this without deeply nested subqueries — a significant jump in query complexity compared to standard aggregations.
+
+**5. Thinking in business terms, not just SQL**
+The biggest non-technical challenge was framing queries around business questions rather than just "writing SQL." Learning to ask *"what decision does this answer?"* before writing a single line made the analysis more focused and the results more meaningful.
+
+---
+
+## What I Learned
+
+- **Window functions are essential for real analytics** — `LAG()`, `ROW_NUMBER()`, `RANK()`, and running `SUM() OVER()` came up repeatedly and can't be replaced by simple aggregations. Mastering them unlocked a whole class of problems that were previously impossible.
+
+- **Data cleaning is 40% of the work** — Before writing a single business query, fixing data types, removing duplicates, and validating ranges took significant effort. Clean data isn't given — it's built.
+
+- **CTEs make complex logic readable** — Breaking multi-step logic (like cohort retention) into named, sequential CTEs made queries that would otherwise be unreadable into something structured and debuggable.
+
+- **RFM is a powerful segmentation starting point** — Recency, Frequency, and Monetary value together give a surprisingly complete picture of customer behavior using only order data — no external tools needed.
+
+- **Cohort analysis reveals what averages hide** — Overall retention rate is just a number. Cohort analysis shows *which* group of customers is churning and *when* — a fundamentally more useful view for any retention strategy.
+
+- **Safe SQL practices matter** — Using `NULLIF()` for safe division, always verifying deletes with a `SELECT` before running `DELETE`, and validating date ranges after conversion are habits that prevent silent, hard-to-catch errors in production.
